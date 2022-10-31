@@ -171,25 +171,24 @@ namespace Application_Gestion_De_Garage
         #region Garage fonctionnalities
         public static Garage GenerateTheGarage(MenuManager menuManager, string name = null, List<Vehicle> vehicles = null)
         {
+            GarageData garageData = new GarageData();
+
             if (name == null)
             {
-                GetAStringOfType(out name, "What is the name of your garage");
+                GetAStringOfType(out garageData.name, "What is the name of your garage");
                 if (menuManager.GetGarageList().Where(garage => garage.Name == name).ToList().Count > 0) PromptHelper.PromptWarning("A garage already got this name");
             }
 
-            if (vehicles == null)
+            if (CheckYesNo("Do you wish to add some vehicles to this garage ?"))
             {
-                if (CheckYesNo("Do you wish to add some vehicles to this garage ?"))
-                {
-                    vehicles = CreateVehicles();
-                }
-                else
-                {
-                    vehicles = new List<Vehicle>();
-                }
+                garageData.vehicles = CreateVehicles();
+            }
+            else
+            {
+                garageData.vehicles = new List<Vehicle>();
             }
 
-            Garage garage = new Garage(name, vehicles);
+            Garage garage = new Garage(garageData);
             SetCurrentGarage(menuManager, garage);
             return garage;
         }
@@ -261,13 +260,17 @@ namespace Application_Gestion_De_Garage
             return vehicles;
         }
 
-        public static void CreateACar()
+        public static Car CreateACar()
         {
             CarData carData = new CarData();
             carData.vehicleData = CreateVehicle();
-            Console.WriteLine("a car");
-
+            GetAStringOfType(out carData.taxHorsePower, "What is the amount of tax horse power of the car ?");
+            GetAStringOfType(out carData.doorNumber, "What is the amount of doors of the car ?");
+            GetAStringOfType(out carData.sitsNumber, "What is the number of setis of the car ?");
+            GetAStringOfType(out carData.carTrunkSize, "What is the size of the car trunk ?");
+           
             PromptHelper.PromptCongratulation("Nice you've done it, you've created a nice car");
+            return new Car(carData);
         }
 
         public static void CreateATruck()
@@ -316,7 +319,6 @@ namespace Application_Gestion_De_Garage
 
         public static Motor SpecifyMotor()
         {
-            //[Well would be cool to have a data base where those are stored and reusable to add on other vehicles]
             MotorData motor = new MotorData();
 
             GetAStringOfType(out motor.Name, "what is the name of the motor ?");
@@ -334,7 +336,6 @@ namespace Application_Gestion_De_Garage
 
         public static List<Option> SpecifyOptions()
         {
-            //[Well would be cool to have a data base where those are stored and reusable to add on other vehicles]
             List<Option> options = new List<Option>();
             do
             {

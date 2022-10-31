@@ -25,6 +25,12 @@ namespace Application_Gestion_De_Garage
             this.name = name;
         }
 
+        public Garage(GarageData garageData)
+        {
+            name = garageData.name;
+            vehicles = garageData.vehicles;
+        }
+
         public List<Vehicle> vehicles = new List<Vehicle>();
 
         private string name;

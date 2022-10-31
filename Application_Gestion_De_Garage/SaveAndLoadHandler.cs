@@ -13,6 +13,13 @@ namespace Application_Gestion_De_Garage
     #region helper data struct
     //Are going to be used for save and load
     [System.Serializable]
+    public struct GarageData
+    {
+        public string name;
+        public List<Vehicle> vehicles;
+    }
+
+    [System.Serializable]
     public struct VehicleData
     {
         public string Name;
