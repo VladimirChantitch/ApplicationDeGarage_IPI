@@ -52,6 +52,16 @@ namespace Application_Gestion_De_Garage
             this.vehicleMotor = vehicleMotor;
         }
 
+        public Vehicle(VehicleData vehicleData)
+        {
+            id = Incrementator.VehicleIncrement;
+            name = vehicleData.Name;
+            priceHT = vehicleData.priceHT;
+            brand = vehicleData.brand;
+            options = vehicleData.options;
+            vehicleMotor = vehicleData.motor;
+        }
+
         public virtual void Show(bool withIds = false)
         {
             PromptHelper.PromptSubTitle($"Informations about {brand} :: {name}");

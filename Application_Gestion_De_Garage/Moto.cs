@@ -15,6 +15,11 @@ namespace Application_Gestion_De_Garage
             this.cylinders = cylinders;
         }
 
+        public Moto(MotoData motoData) : base(motoData.vehicleData)
+        {
+            cylinders = motoData.cylinders;
+        }
+
         public override decimal CalcultateTax()
         {
             return (int)(cylinders * 0.3);

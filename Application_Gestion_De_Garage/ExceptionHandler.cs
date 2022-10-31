@@ -11,12 +11,24 @@ namespace Application_Gestion_De_Garage
     {
         public static void HandleException(Exception exception, bool erase = false)
         {
-            Console.WriteLine("Something wrong happened ::");
-            Console.WriteLine(exception.ToString());
+            switch (exception)
+            {
+                case NotImplementedException notImplemented:
+                    //Create a ticket on the trello project
+                    Console.WriteLine("Something wrong happened ::");
+                    Console.WriteLine(notImplemented.Message.ToString());
+                    break;
+                case Exception ex:
+                    Console.WriteLine("Something wrong happened ::");
+                    Console.WriteLine(ex.Message.ToString());
+                    break;
+            }
+
             Console.WriteLine("Feel Free to use the <beer -h> command if you need help");
             Console.WriteLine("....");
             MenuInteractions.AwaitForUser();
             if (erase) Console.Clear();
+            else Console.WriteLine();
         }
     }
 }

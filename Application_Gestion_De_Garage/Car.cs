@@ -22,6 +22,14 @@ namespace Application_Gestion_De_Garage
             this.carTrunkSize = carTrunkSize;
         }
 
+        public Car(CarData carData) : base(carData.vehicleData)
+        {
+            taxHorsePower = carData.taxHorsePower;
+            doorNumber = carData.doorNumber;
+            sitsNumber = carData.sitsNumber;    
+            carTrunkSize = carData.carTrunkSize;    
+        }
+
         public override decimal CalcultateTax()
         {
             return taxHorsePower * 10;

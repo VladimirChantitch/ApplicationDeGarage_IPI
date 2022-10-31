@@ -19,6 +19,13 @@ namespace Application_Gestion_De_Garage
             this.volume = volume;
         }
 
+        public Truck(TruckData truckData) : base(truckData.vehicleData)
+        {
+            axle = truckData.axle;
+            weight = truckData.weight;
+            volume = truckData.volume;
+        }
+
         public override decimal CalcultateTax()
         {
             return axle * 50;

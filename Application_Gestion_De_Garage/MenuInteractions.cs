@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -49,8 +50,9 @@ namespace Application_Gestion_De_Garage
             Console.ReadLine();
         }
 
-        public static bool CheckYesNo()
+        public static bool CheckYesNo(string message = "")
         {
+            if (message != "") Console.WriteLine(message);
             string truth = " ";
             while (truth != "yes" || truth != "no")
             {
@@ -77,48 +79,74 @@ namespace Application_Gestion_De_Garage
             return false;
         }
 
-        public static void GetAString<T>(out T result, string instruction = "")
+        public static void GetAStringOfType<T>(out T result, string instruction = "")
         {
-            if (instruction != "") PromptHelper.PromptSubSubTitle(instruction);
             bool isValid = false;
+            result = default(T);
             string prompt = "";
             while (!isValid)
             {
+                if (instruction != "") PromptHelper.PromptSubSubTitle(instruction);
                 try
                 {
                     prompt = Console.ReadLine();
-                }
-                catch(Exception ex)
-                {
-                    ExceptionHandler.HandleException(ex);
-                }
 
-                if (prompt != "")
-                {
-                    try
+                    if (prompt != "")
                     {
-                        switch (true)
+                        try
                         {
-                            case true when typeof(T) == typeof(string):
-                                result = (T)Convert.ChangeType(prompt, typeof(T));
-                                isValid = true;
-                                break;
-                            case true when typeof(T) == typeof(decimal):
-                                try
-                                {
-
-                                }
-                                catch
-                                {
-
-                                }
-                                break;
+                            switch (true)
+                            {
+                                case true when typeof(T) == typeof(string):
+                                    result = (T)Convert.ChangeType(prompt, typeof(T));
+                                    isValid = true;
+                                    break;
+                                case true when typeof(T) == typeof(decimal):
+                                    result = (T)Convert.ChangeType(prompt, typeof(T));
+                                    isValid = true;
+                                    break;
+                                case true when typeof(T) == typeof(int):
+                                    result = (T)Convert.ChangeType(prompt, typeof(T));
+                                    isValid = true;
+                                    break;
+                                case true when typeof(T) == typeof(brand_enum):
+                                    if(Enum.TryParse<brand_enum>(prompt, out brand_enum brand)){
+                                        result = (T)Convert.ChangeType(brand, typeof(T));
+                                        isValid = true;
+                                    }
+                                    else
+                                    {
+                                        throw (new Exception("Please enter the name of one of the brands availible"));
+                                    }                                  
+                                    break;
+                                case true when typeof(T) == typeof(motor_type):
+                                    if (Enum.TryParse<motor_type>(prompt, out motor_type botor_type))
+                                    {
+                                        result = (T)Convert.ChangeType(botor_type, typeof(T));
+                                        isValid = true;
+                                    }
+                                    else
+                                    {
+                                        throw (new Exception("Please enter the name of one of the motor types availible"));
+                                    }
+                                    break;
+                                default:
+                                    throw (new NotImplementedException($"The type{typeof(T)} is not supported yet"));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ExceptionHandler.HandleException(ex);
                         }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        ExceptionHandler.HandleException(ex);
+                        throw (new Exception("Well you have to write something"));
                     }
+                }
+                catch (Exception ex)
+                {
+                    ExceptionHandler.HandleException(ex);
                 }
             }
         }
@@ -140,18 +168,18 @@ namespace Application_Gestion_De_Garage
         }
         #endregion
         #region Fonctionalities
+        #region Garage fonctionnalities
         public static Garage GenerateTheGarage(MenuManager menuManager, string name = null, List<Vehicle> vehicles = null)
         {
             if (name == null)
             {
-                GetAString(out name, "What is the name of your garage");
+                GetAStringOfType(out name, "What is the name of your garage");
                 if (menuManager.GetGarageList().Where(garage => garage.Name == name).ToList().Count > 0) PromptHelper.PromptWarning("A garage already got this name");
             }
 
             if (vehicles == null)
             {
-                Console.WriteLine("Do you wish to add some vehicles to this garage ?");
-                if (CheckYesNo())
+                if (CheckYesNo("Do you wish to add some vehicles to this garage ?"))
                 {
                     vehicles = CreateVehicles();
                 }
@@ -168,8 +196,7 @@ namespace Application_Gestion_De_Garage
 
         public static void SetCurrentGarage(MenuManager menuManager)
         {
-            Console.WriteLine("Do you wish to have a list of all the garages ?");
-            if (CheckYesNo())
+            if (CheckYesNo("Do you wish to have a list of all the garages ?"))
             {
                 menuManager.GetGarageList().ForEach(garage =>
                 {
@@ -183,7 +210,7 @@ namespace Application_Gestion_De_Garage
             Garage garage;
             while (true)
             {
-                GetAString(out string line);
+                GetAStringOfType(out string line);
                 if (menuManager.GetGarageList().Count <= 0) 
                 {
                     ExceptionHandler.HandleException(new Exception("Well there are no garages created yet please load one or create a new one"), true); 
@@ -214,7 +241,8 @@ namespace Application_Gestion_De_Garage
                 menuManager.CurrentGarage = garages.Where(garage => garage.Name == garage_name).ToList().First();
             }
         }
-
+        #endregion
+        #region vehicles creation
         public static List<Vehicle> CreateVehicles()
         {
             List<Vehicle> vehicles = new List<Vehicle>();
@@ -224,8 +252,7 @@ namespace Application_Gestion_De_Garage
             {
                 Console.WriteLine("Please enter <beer -car or -truck or -moto> depending on which type of vehicule you want to add to your garage");
                 GetAParsable();
-                Console.WriteLine("Do you wish to continue ?");
-                if (!CheckYesNo())
+                if (!CheckYesNo("Do you wish to continue ?"))
                 {
                     isWishingForMore = false;
                 }
@@ -236,40 +263,90 @@ namespace Application_Gestion_De_Garage
 
         public static void CreateACar()
         {
-            VehicleData vehicleData = new VehicleData();
+            CarData carData = new CarData();
+            carData.vehicleData = CreateVehicle();
             Console.WriteLine("a car");
+
+            PromptHelper.PromptCongratulation("Nice you've done it, you've created a nice car");
         }
 
         public static void CreateATruck()
         {
-            VehicleData vehicleData = new VehicleData();
+            TruckData truckData = new TruckData();
+            truckData.vehicleData = CreateVehicle();
+
             Console.WriteLine("a truck");
+
+            PromptHelper.PromptCongratulation("Nice you've done it, you've created a nice truck");
         }
 
         public static void CreateAMoto()
         {
-            VehicleData vehicleData = new VehicleData();
+            MotoData motoData = new MotoData();
+            motoData.vehicleData = CreateVehicle();
             Console.WriteLine("a moto");
+
+            PromptHelper.PromptCongratulation("Nice you've done it, you've created a nice moto");
         }
 
         private static VehicleData CreateVehicle()
         {
             VehicleData vehicleData = new VehicleData();
-            GetAString(out vehicleData.Name, "What is the name of your vehicle ?");
-            GetAString(out vehicleData.priceHT, "What is the name of your vehicle ?");
+
+            GetAStringOfType(out vehicleData.Name, "What is the name of your vehicle ?");
+            GetAStringOfType(out vehicleData.priceHT, "What is the price HT (euro) of your vehicle ?");
+            if(CheckYesNo("Do you wish to see all garage brands ?"))
+            {
+                Enum.GetNames(typeof(brand_enum)).ToList().ForEach(name => Console.WriteLine("- " + name));
+            }
+            GetAStringOfType(out vehicleData.brand, "What is the brand of your vehicle ?");
+
+            Console.WriteLine();
+            Console.WriteLine("Well you are not selling rubish, your vehicules needs a motor");
+            vehicleData.motor = SpecifyMotor();
+
+            vehicleData.options = new List<Option>();
+            if (CheckYesNo("Do you wish to add some options to this vehicle maybe ?"))
+            {
+                vehicleData.options.AddRange(SpecifyOptions());
+            }
+
             return vehicleData;
         }
-        #endregion
 
-        #region helper data struct
-        public struct VehicleData
+        public static Motor SpecifyMotor()
         {
-            public string Name;
-            public decimal priceHT;
-            public brand_enum brand;
-            public Motor motor;
-            public List<Option> options;
+            //[Well would be cool to have a data base where those are stored and reusable to add on other vehicles]
+            MotorData motor = new MotorData();
+
+            GetAStringOfType(out motor.Name, "what is the name of the motor ?");
+            Console.WriteLine(motor.Name);
+            GetAStringOfType(out motor.power, "what is the horse power of your motor");
+            GetAStringOfType(out motor.price, "what is the price of this motor");
+            if (CheckYesNo("Do you wish to see all the motor types"))
+            {
+                Enum.GetNames(typeof(motor_type)).ToList().ForEach(name => Console.WriteLine("- " + name));
+            }
+            GetAStringOfType(out motor.motortype, "what is the motor type");
+            
+            return new Motor(motor.Name, motor.power, motor.price, motor.motortype);
+        }
+
+        public static List<Option> SpecifyOptions()
+        {
+            //[Well would be cool to have a data base where those are stored and reusable to add on other vehicles]
+            List<Option> options = new List<Option>();
+            do
+            {
+                OptionData option = new OptionData();
+                GetAStringOfType(out option.Name, "What is your option name ?");
+                GetAStringOfType(out option.price, "What is your option price ?");
+                options.Add(new Option(option.Name, option.price));
+            }
+            while (CheckYesNo("Do you wish to add one more option ?"));
+            return options;
         }
         #endregion
+        #endregion       
     }
 }

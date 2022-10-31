@@ -16,6 +16,13 @@ namespace Application_Gestion_De_Garage
             id = Incrementator.OptionIncrement;
         }
 
+        public Option(OptionData optionData)
+        {
+            name = optionData.Name;
+            price = optionData.price;
+            id = Incrementator.OptionIncrement;
+        }
+
         private int id;
 
         private string name;

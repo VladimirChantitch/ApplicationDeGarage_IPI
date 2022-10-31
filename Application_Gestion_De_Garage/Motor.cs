@@ -17,6 +17,15 @@ namespace Application_Gestion_De_Garage
             this.motor_Type = motor_Type;
         }
 
+        public Motor(MotorData motorData)
+        {
+            id = Incrementator.MotorIncrement;
+            name = motorData.Name;
+            power = motorData.power;
+            price = motorData.price;
+            motor_Type = motorData.motortype;
+        }
+
         private int id;
         public int Id { get { return id; } }
         private string name;

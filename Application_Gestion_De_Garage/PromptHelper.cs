@@ -41,6 +41,13 @@ namespace Application_Gestion_De_Garage
             Console.WriteLine();
         }
 
+        public static void PromptCongratulation(string message)
+        {
+            Console.WriteLine();
+            Console.WriteLine("------------ " + message + " -----------");
+            Console.WriteLine();
+        }
+
         public static void PromptOptionAddedSuccess(Vehicle vehicle)
         {
             Console.WriteLine();
