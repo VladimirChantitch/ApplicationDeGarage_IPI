@@ -39,7 +39,18 @@ namespace Application_Gestion_De_Garage
                 Console.WriteLine(no_a_ops.option + "              " + no_a_ops.optionDescription);
             });
 
-            PromptHelper.PromptWarning("Beware when you are building a garage or building a vehicle those commands are disbled and you have to arrive at the end of the process you are in");
+            PromptHelper.PromptSubTitle("Those are the more complexe options, just use <beer> followed byt the option to do stuff");
+            Parser.Instance.Get_2Args_options().ForEach(one_a_ops =>
+            {
+                Console.WriteLine();
+                Console.WriteLine(one_a_ops.option + "              " + one_a_ops.optionDescription);
+                one_a_ops._args.ForEach(ops =>
+                {
+                    Console.WriteLine("*******  " + ops.option + "        " + ops.optionDescription);
+                });
+            });
+
+            PromptHelper.PromptWarning("Beware when you are building a garage or building a vehicle those commands are disbled and you have to finsih the process you are currently in");
             AwaitForUser();
         }
 
@@ -166,41 +177,37 @@ namespace Application_Gestion_De_Garage
                 }
             }
         }
+
+        public static bool GarageCheck(MenuManager menuManager)
+        {
+            if (menuManager.CurrentGarage == null)
+            {
+                ExceptionHandler.HandleException(new Exception("Please select or create a Garage first")); 
+                return false;
+            }
+            return true;
+        }
+
+        public static bool VehicleCheck(MenuManager menuManager)
+        {
+            if (menuManager.CurrentVehicle == null)
+            {
+                ExceptionHandler.HandleException(new Exception("Please select a vehicle first"));
+                return false;
+            }
+            return true;
+        }
         #endregion
         #region Fonctionalities
         #region Garage fonctionnalities
-        public static Garage GenerateTheGarage(MenuManager menuManager, string name = null, List<Vehicle> vehicles = null)
-        {
-            GarageData garageData = new GarageData();
-
-            if (name == null)
-            {
-                GetAStringOfType(out garageData.name, "What is the name of your garage");
-                if (menuManager.GetGarageList().Where(garage => garage.Name == name).ToList().Count > 0) PromptHelper.PromptWarning("A garage already got this name");
-            }
-
-            if (CheckYesNo("Do you wish to add some vehicles to this garage ?"))
-            {
-                garageData.vehicles = CreateVehicles();
-            }
-            else
-            {
-                garageData.vehicles = new List<Vehicle>();
-            }
-
-            Garage garage = new Garage(garageData);
-            SetCurrentGarage(menuManager, garage);
-            return garage;
-        }
-
-        public static void SetCurrentGarage(MenuManager menuManager)
+        public static void GetAGarage(MenuManager menuManager)
         {
             if (CheckYesNo("Do you wish to have a list of all the garages ?"))
             {
                 menuManager.GetGarageList().ForEach(garage =>
                 {
                     PromptHelper.PromptSubSubTitle($"This is the {garage.Name} garage");
-                    Console.WriteLine($"it constains {garage.vehicles.Count} vehicles");
+                    Console.WriteLine($"it constains {garage.GetVehicles().Count} vehicles");
                     Console.WriteLine($"for a total value of {garage.CalculateGarageValue()}");
                 });
             }
@@ -210,19 +217,36 @@ namespace Application_Gestion_De_Garage
             while (true)
             {
                 GetAStringOfType(out string line);
-                if (menuManager.GetGarageList().Count <= 0) 
+                if (menuManager.GetGarageList().Count <= 0)
                 {
-                    ExceptionHandler.HandleException(new Exception("Well there are no garages created yet please load one or create a new one"), true); 
-                    return; 
+                    ExceptionHandler.HandleException(new Exception("Well there are no garages created yet please load one or create a new one"), true);
+                    return;
                 }
                 garage = menuManager.GetGarageList().Where(garage => garage.Name.ToLower() == line.ToLower().Trim())
                                                     .ToList()
                                                     .First();
-                if (garage != null){
+                if (garage != null)
+                {
                     SetCurrentGarage(menuManager, garage);
                     Console.WriteLine($"Thanks for choosing the {garage.Name} garage");
                     return;
                 }
+            }
+        }
+        public static void GenerateTheGarage(MenuManager menuManager, string name = null, List<Vehicle> vehicles = null)
+        {
+            if (name == null)
+            {
+                GetAStringOfType(out name, "What is the name of your garage");
+                if (menuManager.GetGarageList().Where(garage => garage.Name == name).ToList().Count > 0) PromptHelper.PromptWarning("A garage already got this name");
+            }
+
+            Garage garage = new Garage(name);
+            SetCurrentGarage(menuManager, garage);
+
+            if (CheckYesNo("Do you wish to add some vehicles to this garage ?"))
+            {
+                CreateVehicles();
             }
         }
 
@@ -242,26 +266,32 @@ namespace Application_Gestion_De_Garage
         }
         #endregion
         #region vehicles creation
-        public static List<Vehicle> CreateVehicles()
+        public static void CreateVehicles()
         {
-            List<Vehicle> vehicles = new List<Vehicle>();
             bool isWishingForMore = true;
 
             while (isWishingForMore)
             {
-                Console.WriteLine("Please enter <beer -car or -truck or -moto> depending on which type of vehicule you want to add to your garage");
+                Console.WriteLine("Please enter <beer -add>  <-car> or <-truck> or <-moto> depending on which type of vehicule you want to add to your garage");
                 GetAParsable();
-                if (!CheckYesNo("Do you wish to continue ?"))
+                if (!CheckYesNo("Do you wish to add more vehicles?"))
                 {
                     isWishingForMore = false;
                 }
             }
-
-            return vehicles;
         }
 
-        public static Car CreateACar()
+        public static void CreateAVehicle(MenuManager menuManager)
         {
+            if (!GarageCheck(menuManager)) return;
+
+            Console.WriteLine("Please enter <beer -add>  <-car> or <-truck> or <-moto> depending on which type of vehicule you want to add to your garage");
+            GetAParsable();
+        }
+
+        public static Car CreateACar(MenuManager menuManager)
+        {
+            if (!GarageCheck(menuManager)) return null;
             CarData carData = new CarData();
             carData.vehicleData = CreateVehicle();
             GetAStringOfType(out carData.taxHorsePower, "What is the amount of tax horse power of the car ?");
@@ -273,23 +303,28 @@ namespace Application_Gestion_De_Garage
             return new Car(carData);
         }
 
-        public static void CreateATruck()
+        public static Truck CreateATruck(MenuManager menuManager)
         {
+            if (!GarageCheck(menuManager)) return null;
             TruckData truckData = new TruckData();
             truckData.vehicleData = CreateVehicle();
-
-            Console.WriteLine("a truck");
+            GetAStringOfType(out truckData.axle, "What is number of axle of this truck ?");
+            GetAStringOfType(out truckData.weight, "What is the weight of the truck?");
+            GetAStringOfType(out truckData.volume, "What is the volume of the truck?");
 
             PromptHelper.PromptCongratulation("Nice you've done it, you've created a nice truck");
+            return new Truck(truckData);
         }
 
-        public static void CreateAMoto()
+        public static Moto CreateAMoto(MenuManager menuManager)
         {
+            if (!GarageCheck(menuManager)) return null;
             MotoData motoData = new MotoData();
             motoData.vehicleData = CreateVehicle();
-            Console.WriteLine("a moto");
+            GetAStringOfType(out motoData.cylinders, "What is the number of cylinder of the moto?");
 
             PromptHelper.PromptCongratulation("Nice you've done it, you've created a nice moto");
+            return new Moto(motoData);
         }
 
         private static VehicleData CreateVehicle()
@@ -300,7 +335,7 @@ namespace Application_Gestion_De_Garage
             GetAStringOfType(out vehicleData.priceHT, "What is the price HT (euro) of your vehicle ?");
             if(CheckYesNo("Do you wish to see all garage brands ?"))
             {
-                Enum.GetNames(typeof(brand_enum)).ToList().ForEach(name => Console.WriteLine("- " + name));
+                ShowAllBrands();
             }
             GetAStringOfType(out vehicleData.brand, "What is the brand of your vehicle ?");
 
@@ -308,7 +343,7 @@ namespace Application_Gestion_De_Garage
             Console.WriteLine("Well you are not selling rubish, your vehicules needs a motor");
             vehicleData.motor = SpecifyMotor();
 
-            vehicleData.options = new List<Option>();
+            vehicleData.options = new List<OptionData>();
             if (CheckYesNo("Do you wish to add some options to this vehicle maybe ?"))
             {
                 vehicleData.options.AddRange(SpecifyOptions());
@@ -317,7 +352,7 @@ namespace Application_Gestion_De_Garage
             return vehicleData;
         }
 
-        public static Motor SpecifyMotor()
+        public static MotorData SpecifyMotor()
         {
             MotorData motor = new MotorData();
 
@@ -331,23 +366,112 @@ namespace Application_Gestion_De_Garage
             }
             GetAStringOfType(out motor.motortype, "what is the motor type");
             
-            return new Motor(motor.Name, motor.power, motor.price, motor.motortype);
+            return motor;
         }
 
-        public static List<Option> SpecifyOptions()
+        public static List<OptionData> SpecifyOptions()
         {
-            List<Option> options = new List<Option>();
+            List<OptionData> options = new List<OptionData>();
             do
             {
                 OptionData option = new OptionData();
                 GetAStringOfType(out option.Name, "What is your option name ?");
                 GetAStringOfType(out option.price, "What is your option price ?");
-                options.Add(new Option(option.Name, option.price));
+                options.Add(option);
             }
             while (CheckYesNo("Do you wish to add one more option ?"));
             return options;
         }
         #endregion
-        #endregion       
+        #region ObjectDestruction
+        public static void DestroySelectedVehicle(MenuManager menuManager)
+        {
+            if (!VehicleCheck(menuManager)) return;
+            if (CheckYesNo($"Are you sure you want to delete {menuManager.CurrentVehicle.Name}"))
+            {
+                menuManager.CurrentGarage.RemoveAVehicle(menuManager.CurrentVehicle);
+            }
+
+            PromptHelper.PromptCongratulation($"Congratulation you have deleted {menuManager.CurrentVehicle.Name}");
+        }
+        public static void RemoveOptionOnSelectedVehicle(MenuManager menuManager)
+        {
+            if (!VehicleCheck(menuManager)) return;
+            if (CheckYesNo("Do you wish to see all the vehicule options ?"))
+            {
+                menuManager.CurrentVehicle.ShowOptions();
+            }
+
+            GetAStringOfType(out int id, "PLease enter the id of the option you wish to remove");
+            menuManager.CurrentVehicle.RemoveOption(id);
+
+        }
+        #endregion
+        #region Object Selection
+        public static Vehicle SelectAVehicle(MenuManager menuManager)
+        {
+            if (!GarageCheck(menuManager)) return null;
+            if (CheckYesNo("Do you wish to have a list of all vehicles by ID ?"))
+            {
+                menuManager.CurrentGarage.Show(true);
+                AwaitForUser();
+            }
+            GetAStringOfType(out int id, "What vehicle id do you wish to select ?");
+            return menuManager.CurrentGarage.GetVehicleByID(id);
+        }
+        public static Vehicle SelectACar(MenuManager menuManager)
+        {
+            if (!GarageCheck(menuManager)) return null;
+            if (CheckYesNo("Do you wish to have a list of all Car by ID ?"))
+            {
+                menuManager.CurrentGarage.ShowCars(true);
+                AwaitForUser();
+            }
+            GetAStringOfType(out int id, "What vehicle id do you wish to select ?");
+            return menuManager.CurrentGarage.GetVehicleByID(id);
+        }
+        public static Vehicle SelectATruck(MenuManager menuManager)
+        {
+            if (!GarageCheck(menuManager)) return null;
+            if (CheckYesNo("Do you wish to have a list of all Truck by ID ?"))
+            {
+                menuManager.CurrentGarage.ShowTrucks(true);
+                AwaitForUser();
+            }
+            GetAStringOfType(out int id, "What vehicle id do you wish to select ?");
+            return menuManager.CurrentGarage.GetVehicleByID(id);
+        }
+        public static Vehicle SelectAMoto(MenuManager menuManager)
+        {
+            if (!GarageCheck(menuManager)) return null;
+            if (CheckYesNo("Do you wish to have a list of all Moto by ID ?"))
+            {
+                menuManager.CurrentGarage.ShowMoto(true);
+                AwaitForUser();
+            }
+            GetAStringOfType(out int id, "What vehicle id do you wish to select ?");
+            return menuManager.CurrentGarage.GetVehicleByID(id);
+        }
+        #endregion
+        #region Show data
+        public static void ShowAllMotorsInGarage(MenuManager menuManager)
+        {
+            if (!GarageCheck(menuManager)) return;
+            menuManager.CurrentGarage.GetVehicles().ForEach(vehicle =>
+            {
+                PromptHelper.PromptSubSubTitle($"The motor {vehicle.VehicleMotor.Name} has");
+                Console.WriteLine($" a power of {vehicle.VehicleMotor.Power} HP");
+                Console.WriteLine($" a price of {vehicle.VehicleMotor.Price} eurodollar");
+                Console.WriteLine($" and is of the {vehicle.VehicleMotor.Motor_Type} type");
+            });
+            AwaitForUser();
+        }
+
+        public static void ShowAllBrands()
+        {
+            Enum.GetNames(typeof(brand_enum)).ToList().ForEach(name => Console.WriteLine("- " + name));
+        }
+        #endregion
+        #endregion
     }
 }

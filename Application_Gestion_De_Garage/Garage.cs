@@ -28,13 +28,40 @@ namespace Application_Gestion_De_Garage
         public Garage(GarageData garageData)
         {
             name = garageData.name;
-            vehicles = garageData.vehicles;
+            vehicles = new List<Vehicle>();
+            garageData.vehicles.ForEach(v =>
+            {
+                switch (v)
+                {
+                    case CarData cd:
+                        vehicles.Add(new Car(cd));
+                        break;
+                    case TruckData td:
+                        vehicles.Add(new Truck(td));
+                        break;
+                    case MotoData md:
+                        vehicles.Add(new Moto(md));
+                        break;
+                }
+            });
         }
 
-        public List<Vehicle> vehicles = new List<Vehicle>();
+        List<Vehicle> vehicles = new List<Vehicle>();
 
         private string name;
         public string Name { get { return name; } set { name = value; } }
+
+        public GarageData GetData()
+        {
+            List<Data> datas = new List<Data>();
+            vehicles.ForEach(v => datas.Add(v.GetData()));
+
+            return new GarageData()
+            {
+                name = name,
+                vehicles = datas,
+            };
+        }
 
         public decimal CalculateGarageValue()
         {
@@ -51,6 +78,19 @@ namespace Application_Gestion_De_Garage
             if (vehicle == null) return;
             if (vehicles == null) vehicles = new List<Vehicle>();
             vehicles.Add(vehicle);
+        }
+
+        public void RemoveAVehicle(Vehicle vehicle)
+        {
+            if (vehicle == null) return;
+            if (vehicles == null) return;
+            vehicles.Remove(vehicle);
+        }
+
+        public List<Vehicle> GetVehicles()
+        {
+            if (vehicles == null) return new List<Vehicle>();
+            return vehicles;
         }
 
         public Vehicle GetVehicleByID(int id)

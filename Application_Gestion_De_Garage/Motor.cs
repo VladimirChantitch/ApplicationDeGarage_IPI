@@ -37,6 +37,17 @@ namespace Application_Gestion_De_Garage
         private motor_type motor_Type;
         public motor_type Motor_Type { get { return motor_Type; } set { motor_Type = value; } }
 
+        public MotorData GetData()
+        {
+            return new MotorData()
+            {
+                motortype = motor_Type,
+                Name = Name,
+                power = power,
+                price = price,
+            };
+        }
+
         public void Show()
         {
             PromptHelper.PromptSubSubTitle("Here is a Motor");

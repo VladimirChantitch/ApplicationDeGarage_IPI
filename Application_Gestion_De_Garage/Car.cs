@@ -30,6 +30,29 @@ namespace Application_Gestion_De_Garage
             carTrunkSize = carData.carTrunkSize;    
         }
 
+        public override Data GetData()
+        {
+            List<OptionData> opDatas = new List<OptionData>();
+            options.ForEach(op => opDatas.Add(op.GetData()));
+
+            MotorData motorData = VehicleMotor.GetData();
+            return new CarData()
+            {
+                vehicleData = new VehicleData()
+                {
+                    Name = Name,
+                    priceHT = PriceHT,
+                    brand = Brand,
+                    options = opDatas,
+                    motor = motorData
+                },
+                carTrunkSize = carTrunkSize,
+                doorNumber = doorNumber,
+                sitsNumber = sitsNumber,
+                taxHorsePower = taxHorsePower
+            };
+        }
+
         public override decimal CalcultateTax()
         {
             return taxHorsePower * 10;

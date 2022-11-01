@@ -20,6 +20,26 @@ namespace Application_Gestion_De_Garage
             cylinders = motoData.cylinders;
         }
 
+        public override Data GetData()
+        {
+            List<OptionData> opDatas = new List<OptionData>();
+            options.ForEach(op => opDatas.Add(op.GetData()));
+
+            MotorData motorData = VehicleMotor.GetData();
+            return new MotoData()
+            {
+                vehicleData = new VehicleData()
+                {
+                    Name = Name,
+                    priceHT = PriceHT,
+                    brand = Brand,
+                    options = opDatas,
+                    motor = motorData
+                },
+                cylinders = cylinders
+            };
+        }
+
         public override decimal CalcultateTax()
         {
             return (int)(cylinders * 0.3);

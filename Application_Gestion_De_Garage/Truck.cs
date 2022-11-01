@@ -25,6 +25,27 @@ namespace Application_Gestion_De_Garage
             weight = truckData.weight;
             volume = truckData.volume;
         }
+        public override Data GetData()
+        {
+            List<OptionData> opDatas = new List<OptionData>();
+            options.ForEach(op => opDatas.Add(op.GetData()));
+
+            MotorData motorData = VehicleMotor.GetData();
+            return new TruckData()
+            {
+                vehicleData = new VehicleData()
+                {
+                    Name = Name,
+                    priceHT = PriceHT,
+                    brand = Brand,
+                    options = opDatas,
+                    motor = motorData
+                },
+                axle = axle,
+                volume = volume,
+                weight = weight
+            };
+        }
 
         public override decimal CalcultateTax()
         {

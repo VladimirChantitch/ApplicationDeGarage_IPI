@@ -23,7 +23,7 @@ namespace Application_Gestion_De_Garage
         private Motor vehicleMotor;
         public Motor VehicleMotor { get { return vehicleMotor;} set { vehicleMotor = value; } }
 
-        private List<Option> options = new List<Option>();
+        protected List<Option> options = new List<Option>();
 
         private Filter filter = Filter.id; public void SetFilter(Filter filter) { this.filter = filter; }
 
@@ -58,9 +58,13 @@ namespace Application_Gestion_De_Garage
             name = vehicleData.Name;
             priceHT = vehicleData.priceHT;
             brand = vehicleData.brand;
-            options = vehicleData.options;
-            vehicleMotor = vehicleData.motor;
+            options = new List<Option>();
+            vehicleData.options.ForEach(op => options.Add(new Option(op)));
+
+            vehicleMotor = new Motor(vehicleData.motor);
         }
+
+        public abstract Data GetData();
 
         public virtual void Show(bool withIds = false)
         {
@@ -102,6 +106,7 @@ namespace Application_Gestion_De_Garage
                 else
                 {
                     options.Add(option);
+                    Console.WriteLine($"option {option.Name} added");
                     PromptHelper.PromptOptionAddedSuccess(this);
                 }
             }
@@ -111,6 +116,17 @@ namespace Application_Gestion_De_Garage
             }
         }
 
+        public virtual void AddOptions(List<OptionData> new_options)
+        {
+            if (options == null) options = new List<Option>();
+            new_options.ForEach(op => {
+                options.Add(new Option(op));
+                Console.WriteLine($"option {op.Name} added");
+            });
+
+            PromptHelper.PromptOptionAddedSuccess(this);
+        }
+
         public virtual void RemoveOption(Option option)
         {
             if (options != null)
@@ -118,6 +134,11 @@ namespace Application_Gestion_De_Garage
                 options.Remove(option);
                 PromptHelper.PromptOptionRemovedSuccess(this);
             }
+        }
+
+        public virtual void RemoveOption(int _id)
+        {
+            RemoveOption(options.Where(option => option.Id == _id).ToList().First());
         }
 
         public virtual decimal GetOptionsTotalPrice() 

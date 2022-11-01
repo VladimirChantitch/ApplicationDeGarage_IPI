@@ -81,15 +81,20 @@ namespace Application_Gestion_De_Garage
                     new unitary_option()
                     {
                         option_description = "Prompt 2 to save the garage",
-                        action = () => {}
+                        action = () => {new SaveAndLoadHandler().SaveData(this); }
+                    },
+                    new unitary_option()
+                    {
+                        option_description = "Prompt 3 to load a saveFile",
+                        action = () => {new SaveAndLoadHandler().LoadData(this);}
                     },
                     new unitary_option(){
-                        option_description = "Prompt 3 to use the garage menu",
+                        option_description = "Prompt 4 to use the garage menu", 
                         action = () => {currentMenu = garageMenu; }
                     },
                     new unitary_option()
                     {
-                        option_description = "Prompt 4 to go to the vehicule menu",
+                        option_description = "Prompt 5 to go to the vehicule menu",
                         action = () => {currentMenu = vehicleMenu; }
                     }
                 }
@@ -112,8 +117,8 @@ namespace Application_Gestion_De_Garage
                     },
                     new unitary_option()
                     {
-                        option_description = "Prompt 2 to load a Garage using a garage name",
-                        action = () => {MenuInteractions.SetCurrentGarage(this); }
+                        option_description = "Prompt 2 to select a Garage using a garage name",
+                        action = () => {MenuInteractions.GetAGarage(this); }
                     },
                     new unitary_option()
                     {
@@ -123,27 +128,22 @@ namespace Application_Gestion_De_Garage
                                 ExceptionHandler.HandleException(new Exception("You need to have a garage, please load or create a new one"), true); 
                                 return;
                             }
-                            currentGarage.vehicles.AddRange(MenuInteractions.CreateVehicles());
+                            MenuInteractions.CreateVehicles();
                         }
                     },
                     new unitary_option()
                     {
-                        option_description = "Prompt 4 to show all the existing options",
-                        action = () => {}
+                        option_description = "Prompt 4 to show all the availible brand present in the garage",
+                        action = () => {MenuInteractions.ShowAllBrands(); }
                     },
                     new unitary_option()
                     {
-                        option_description = "Prompt 5 to show all the availible brand present in the garage",
-                        action = () => { }
+                        option_description = "Prompt 5 to show all the availible type motors present in the garage",
+                        action = () => {MenuInteractions.ShowAllMotorsInGarage(this); }
                     },
                     new unitary_option()
                     {
-                        option_description = "Prompt 6 to show all the availible type motors present in the garage",
-                        action = () => { }
-                    },
-                    new unitary_option()
-                    {
-                        option_description = "Prompt 7 to go to the vehicule menu",
+                        option_description = "Prompt 6 to go to the vehicule menu",
                         action = () => { currentMenu = vehicleMenu; }
                     }
                 }
@@ -167,27 +167,56 @@ namespace Application_Gestion_De_Garage
                     new unitary_option()
                     {
                         option_description = "Prompt 2 to select a vehicle",
-                        action = () => { }
+                        action = () => {
+                            currentVehicle = MenuInteractions.SelectAVehicle(this);
+                        }
                     },
                     new unitary_option()
                     {
                         option_description = "Prompt 3 to add a vehicle [selects it for further use]",
-                        action = () => { }
+                        action = () => {
+                            MenuInteractions.CreateAVehicle(this);
+                            if (!MenuInteractions.GarageCheck(this)) return;
+                            currentVehicle = currentGarage.GetVehicles().Last();
+                        }
                     },
                     new unitary_option()
                     {
-                        option_description = "Prompt 4 to delete a vehicle [selected one by default]",
-                        action = () => { }
+                        option_description = "Prompt 4 to delete a vehicle [the selected one by default]",
+                        action = () => {
+                            MenuInteractions.DestroySelectedVehicle(this);
+                        }
                     },
                     new unitary_option()
                     {
                         option_description = "Prompt 5 to show the options of a vehicle [selected one by default]",
-                        action = () => { }
+                        action = () => {
+                            if (!MenuInteractions.VehicleCheck(this)) return;
+                            currentVehicle.ShowOptions();
+                        }
+                    },
+                    new unitary_option()
+                    {
+                        option_description = "Prompt 5 to show the data of a vehicle [selected one by default]",
+                        action = () => {
+                            if (!MenuInteractions.VehicleCheck(this)) return;
+                            currentVehicle.Show();
+                        }
                     },
                     new unitary_option()
                     {
                         option_description = "Prompt 6 to add some options to a vehicle [selected one by default]",
-                        action = () => { }
+                        action = () => {
+                            if (!MenuInteractions.VehicleCheck(this)) return;
+                            currentVehicle.AddOptions(MenuInteractions.SpecifyOptions());
+                        }
+                    },
+                    new unitary_option()
+                    {
+                        option_description = "Prompt 7 to remove some options to a vehicle [selected one by default]",
+                        action = () => {
+                            MenuInteractions.RemoveOptionOnSelectedVehicle(this);
+                        }
                     },
                 });
 

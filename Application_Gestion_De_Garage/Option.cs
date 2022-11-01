@@ -24,6 +24,7 @@ namespace Application_Gestion_De_Garage
         }
 
         private int id;
+        public int Id { get { return id; } }
 
         private string name;
         public string Name { get { return name; } set { name = value; } }
@@ -31,8 +32,18 @@ namespace Application_Gestion_De_Garage
         private decimal price; 
         public decimal Price { get { return price; } set { price = value; } }
 
+        public OptionData GetData()
+        {
+            return new OptionData()
+            {
+                Name = name,
+                price = price
+            };
+        }
+
         public void Show()
         {
+            Console.WriteLine($"Option ID = {id}");
             Console.WriteLine($"Option name = {Name}");
             Console.WriteLine($"Option price = {Price}");
         }
