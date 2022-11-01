@@ -122,6 +122,7 @@ namespace Application_Gestion_De_Garage
 
         public void ParseCommand(string line)
         {
+            line.TrimEnd();
             string[] commands = line.Split(" ");
             switch (commands.Length)
             {

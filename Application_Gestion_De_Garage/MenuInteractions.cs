@@ -57,7 +57,7 @@ namespace Application_Gestion_De_Garage
         public static void AwaitForUser()
         {
             Console.WriteLine();
-            Console.WriteLine("Press any key to continue");
+            Console.WriteLine("Press ENTER to continue");
             Console.ReadLine();
         }
 

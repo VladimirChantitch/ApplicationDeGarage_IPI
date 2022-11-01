@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,14 +14,29 @@ namespace Application_Gestion_De_Garage
         {
             JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All, Formatting = Formatting.Indented };
 
-            string path = Directory.GetCurrentDirectory();
-            Directory.CreateDirectory(path + @"\Saves");
-
-            menuManager.GetGarageList().ForEach(garage =>
+            try
             {
-                File.WriteAllText(@$"{path}\{garage.Name}.json", JsonConvert.SerializeObject(garage, Formatting.Indented, settings));
-                MenuInteractions.AwaitForUser();
-            });
+                string path = Directory.GetCurrentDirectory();
+                Directory.CreateDirectory(path + @"\Saves");
+
+                List<GarageData> garageDatas = new List<GarageData>();
+                menuManager.GetGarageList().ForEach(garage =>
+                {
+                    garageDatas.Add(garage.GetData());
+                });
+
+                garageDatas.ForEach(garage =>
+                {
+                    File.WriteAllText(@$"{path}\Saves\{garage.name}.json", JsonConvert.SerializeObject(garage, settings));
+                });
+            }
+            catch(Exception ex)
+            {
+                ExceptionHandler.HandleException(ex);
+            }
+
+            PromptHelper.PromptCongratulation("Congratulation !!! You've mange to save all of your garages");
+            MenuInteractions.AwaitForUser();
         }
 
         public void LoadData(MenuManager menuManager)
@@ -28,25 +44,31 @@ namespace Application_Gestion_De_Garage
             JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All, Formatting = Formatting.Indented };
 
             string path = Directory.GetCurrentDirectory();
-            List<string> paths = Directory.GetDirectories(path).ToList().Where(dir_path => dir_path.Contains("Saves")).ToList();
+            path = Directory.GetDirectories(path).ToList().Where(dir_path => dir_path.Contains("Saves")).ToList().First();
 
-            if (paths == null || paths.Count <= 0)
+            if (path == null || !path.Contains("Saves"))
             {
                 ExceptionHandler.HandleException(new Exception("Well no save file yet you have to create the data using the app"));
                 return;
             }
-            else
+
+            List<string> paths = Directory.GetFiles(path).ToList();
+
+            paths.ForEach(p =>
             {
-                paths.ForEach(p =>
+                try
                 {
-                    string jsonString = File.ReadAllText(p); // buffer to remove
-                    GarageData garageData = JsonConvert.DeserializeObject<GarageData>(jsonString, settings);
+                    GarageData garageData = JsonConvert.DeserializeObject<GarageData>(File.ReadAllText(p), settings);
                     menuManager.AddGarage(new Garage(garageData));
-                });
-            }
-            
-            var e = JsonConvert.DeserializeObject(jsonString);
-            Console.WriteLine(e);
+                }
+                catch(Exception ex)
+                {
+                    ExceptionHandler.HandleException(ex);
+                }
+            });
+
+            PromptHelper.PromptCongratulation("Congratulation !!! You've mange to load all of your garages");
+            MenuInteractions.AwaitForUser();
         }
     }
 
