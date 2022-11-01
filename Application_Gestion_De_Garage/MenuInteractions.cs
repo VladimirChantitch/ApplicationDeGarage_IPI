@@ -403,7 +403,7 @@ namespace Application_Gestion_De_Garage
             }
 
             GetAStringOfType(out int id, "PLease enter the id of the option you wish to remove");
-            menuManager.CurrentVehicle.RemoveOption(id);
+            menuManager.CurrentVehicle.RemoveAnOption(id);
 
         }
         #endregion

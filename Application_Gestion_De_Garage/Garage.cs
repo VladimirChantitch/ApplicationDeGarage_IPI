@@ -118,7 +118,7 @@ namespace Application_Gestion_De_Garage
 
         public void RemoveOptionToVehicles(Option option, List<Vehicle> vehicles)
         {
-            vehicles?.ForEach(vehicle => vehicle.RemoveOption(option));
+            vehicles?.ForEach(vehicle => vehicle.RemoveAnOption(option));
         }
 
         public void Show(bool withIds = false)

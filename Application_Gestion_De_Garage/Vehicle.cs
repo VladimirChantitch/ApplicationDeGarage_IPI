@@ -127,7 +127,7 @@ namespace Application_Gestion_De_Garage
             PromptHelper.PromptOptionAddedSuccess(this);
         }
 
-        public virtual void RemoveOption(Option option)
+        public virtual void RemoveAnOption(Option option)
         {
             if (options != null)
             {
@@ -136,9 +136,9 @@ namespace Application_Gestion_De_Garage
             }
         }
 
-        public virtual void RemoveOption(int _id)
+        public virtual void RemoveAnOption(int _id)
         {
-            RemoveOption(options.Where(option => option.Id == _id).ToList().First());
+            RemoveAnOption(options.Where(option => option.Id == _id).ToList().First());
         }
 
         public virtual decimal GetOptionsTotalPrice() 
